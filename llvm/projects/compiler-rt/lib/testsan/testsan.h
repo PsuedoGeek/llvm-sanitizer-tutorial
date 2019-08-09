@@ -7,10 +7,10 @@
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_linux.h" 
 
-
+struct NewHookArgs;
 
 extern "C" {
-void testsan_HandleNew(char* name, __sanitizer::uptr Pointer);
+void testsan_HandleNew(NewHookArgs* args, __sanitizer::uptr Pointer);
 void testsan_AllocateShadowMemory();
 void testsan_HelloFunction(char * func_name); 
 void testsan_EndOfMain(); 

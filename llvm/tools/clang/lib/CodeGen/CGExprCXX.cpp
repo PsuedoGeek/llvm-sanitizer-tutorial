@@ -1657,15 +1657,20 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
   SmallString<64> MangledName;
   llvm::raw_svector_ostream MangledNameOut(MangledName);
   CGM.getCXXABI().getMangleContext().mangleCXXRTTI(allocType.getUnqualifiedType(), MangledNameOut);
+  int64_t classSize = getContext().getTypeSizeInChars(allocType).getQuantity();
+
   
   if (SanOpts.has(SanitizerKind::Test)) {
     CXXRecordDecl *RD = allocType->getAsCXXRecordDecl();
     llvm::Constant* name = llvm::ConstantDataArray::getString(getLLVMContext(), MangledNameOut.str());
     auto* gv = new llvm::GlobalVariable(CGM.getModule(), name->getType(), true, llvm::GlobalValue::PrivateLinkage, name );
     gv->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
+	
+	llvm::Constant* sizeArg = llvm::ConstantInt::get(Int32Ty, classSize);
 
     llvm::Constant* staticArgs[] = {
-        gv
+        gv,
+		sizeArg
     };
     llvm::Value* dynamicArgs[] = {
       RV.getScalarVal()

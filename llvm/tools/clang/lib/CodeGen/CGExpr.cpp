@@ -677,7 +677,7 @@ llvm::CallInst* CodeGenFunction::EmitTaintHelper(StringRef FunctionName, ArrayRe
   llvm::AttrBuilder B;
   B.addAttribute(llvm::Attribute::UWTable);
 
-  llvm::Value* Fn = CGM.CreateRuntimeFunction(FnType, FunctionName, llvm::AttributeSet::get(getLLVMContext(), llvm::AttributeSet::FunctionIndex, B));
+  llvm::Value* Fn = CGM.CreateRuntimeFunction(FnType, FunctionName, llvm::AttributeList::get(getLLVMContext(), llvm::AttributeList::FunctionIndex, B));
   return EmitNounwindRuntimeCall(Fn, Args);
 
 }

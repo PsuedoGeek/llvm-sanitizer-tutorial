@@ -14,6 +14,11 @@ INTERCEPTOR(void*, malloc, uptr size) {
 
 // }
 
+struct NewHookArgs {
+	char* className;
+	long classSize;
+};
+
 //Define our own private namespace for our runtime implementation
 void testsan_InitInterceptors() {
 		//InitializeCommonInterceptors();
@@ -63,8 +68,8 @@ void testsan_HelloFunction(char * func_name) {
 }
 
 extern "C" SANITIZER_INTERFACE_ATTRIBUTE
-void testsan_HandleNew(char* name, uptr Pointer) {
-	Printf("GOT NAME %s address %x\n", name, Pointer);
+void testsan_HandleNew(NewHookArgs* args, uptr Pointer) {
+	Printf("RUNTIME: %s address %x classsize = %d \n", args->className, Pointer, args->classSize);
 }
 
 extern "C" SANITIZER_INTERFACE_ATTRIBUTE
