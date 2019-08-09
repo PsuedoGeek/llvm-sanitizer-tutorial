@@ -650,6 +650,38 @@ bool CodeGenFunction::sanitizePerformTypeCheck() const {
          SanOpts.has(SanitizerKind::Vptr);
 }
 
+llvm::CallInst* CodeGenFunction::EmitTaintHelper(StringRef FunctionName, ArrayRef<llvm::Constant*> staticArgs,
+                                                ArrayRef<llvm::Value*> dynamicArgs)
+{
+  SmallVector<llvm::Value*, 4> Args;
+  SmallVector<llvm::Type*,4> ArgTypes;
+  llvm::Constant *Info = llvm::ConstantStruct::getAnon(staticArgs);
+  auto* InfoPtr = new llvm::GlobalVariable(CGM.getModule(), Info->getType(), false, llvm::GlobalValue::PrivateLinkage, Info);
+  InfoPtr->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
+
+
+  Args.reserve(dynamicArgs.size() + 1);
+  ArgTypes.reserve(dynamicArgs.size() + 1);
+
+  Args.push_back(Builder.CreateBitCast(InfoPtr, Int8PtrTy));
+  ArgTypes.push_back(Int8PtrTy);
+
+  for (size_t i = 0, n = dynamicArgs.size() ; i != n ; ++i ) {
+    Args.push_back(EmitCheckValue(dynamicArgs[i]));
+    ArgTypes.push_back(IntPtrTy);
+
+  }
+
+  llvm::FunctionType* FnType = llvm::FunctionType::get(CGM.Int64Ty, ArgTypes, false);
+  assert(FnType);
+  llvm::AttrBuilder B;
+  B.addAttribute(llvm::Attribute::UWTable);
+
+  llvm::Value* Fn = CGM.CreateRuntimeFunction(FnType, FunctionName, llvm::AttributeSet::get(getLLVMContext(), llvm::AttributeSet::FunctionIndex, B));
+  return EmitNounwindRuntimeCall(Fn, Args);
+
+}
+                                                
 void CodeGenFunction::EmitTypeCheck(TypeCheckKind TCK, SourceLocation Loc,
                                     llvm::Value *Ptr, QualType Ty,
                                     CharUnits Alignment,

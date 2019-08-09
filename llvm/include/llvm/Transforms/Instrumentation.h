@@ -153,9 +153,9 @@ ModulePass *createAddressSanitizerModulePass(bool CompileKernel = false,
                                              bool UseGlobalsGC = true,
                                              bool UseOdrIndicator = true);
 
-ModulePass * createSimpleModulePass(); 
-FunctionPass * createSimpleFuncPass();
-BasicBlockPass * createSimpleBlockPass(); 
+// ModulePass * createSimpleModulePass(); 
+// FunctionPass * createSimpleFuncPass();
+// BasicBlockPass * createSimpleBlockPass(); 
 
 FunctionPass *createHWAddressSanitizerPass(bool CompileKernel = false,
                                            bool Recover = false);

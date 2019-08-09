@@ -5,14 +5,14 @@
 using namespace __sanitizer;
 
 
-//INTERCEPTOR(void*, malloc, uptr size) {
-//  return REAL(malloc)(size);
-//}
-
-INTERCEPTOR(void *, malloc, uptr size) {
-	return testsan_Malloc(size); 
-
+INTERCEPTOR(void*, malloc, uptr size) {
+ return REAL(malloc)(size);
 }
+
+// INTERCEPTOR(void *, malloc, uptr size) {
+// 	return testsan_Malloc(size); 
+
+// }
 
 //Define our own private namespace for our runtime implementation
 void testsan_InitInterceptors() {
@@ -63,6 +63,11 @@ void testsan_HelloFunction(char * func_name) {
 }
 
 extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+void testsan_HandleNew(char* name, uptr Pointer) {
+	Printf("GOT NAME %s address %x\n", name, Pointer);
+}
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
 void testsan_EndOfMain() {
 		//internal strlen is from the sanitizer runtimes libc imp. 
 		write(1, "End of main function!\n", internal_strlen("End of main function!\n")); 
@@ -98,7 +103,7 @@ __attribute__((constructor(0)))
 		testsan_InitInterceptors(); 
 
 		//Try to allocate shadowmem, have it store 500 elements. 
-		testsan_AllocateShadowMemory();
+		// testsan_AllocateShadowMemory();
 		VReport(2, "Initialized testsan runtime!\n"); 
 	}
 #if SANITIZER_CAN_USE_PREINIT_ARRAY

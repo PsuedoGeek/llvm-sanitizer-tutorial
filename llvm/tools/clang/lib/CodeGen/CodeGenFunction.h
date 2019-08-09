@@ -4091,6 +4091,9 @@ public:
                  SanitizerHandler Check, ArrayRef<llvm::Constant *> StaticArgs,
                  ArrayRef<llvm::Value *> DynamicArgs);
 
+  llvm::CallInst* EmitTaintHelper(StringRef FunctionName, ArrayRef<llvm::Constant*> staticArgs, 
+                                  ArrayRef<llvm::Value*> dynamicArgs);
+
   /// Emit a slow path cross-DSO CFI check which calls __cfi_slowpath
   /// if Cond if false.
   void EmitCfiSlowPathCheck(SanitizerMask Kind, llvm::Value *Cond,

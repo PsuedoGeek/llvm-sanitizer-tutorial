@@ -10,6 +10,7 @@
 
 
 extern "C" {
+void testsan_HandleNew(char* name, __sanitizer::uptr Pointer);
 void testsan_AllocateShadowMemory();
 void testsan_HelloFunction(char * func_name); 
 void testsan_EndOfMain(); 

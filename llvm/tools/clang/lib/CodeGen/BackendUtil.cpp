@@ -194,14 +194,14 @@ static void addBoundsCheckingPass(const PassManagerBuilder &Builder,
 }
 
 //testsan 
-static void addTestSanitizerPasses(const PassManagerBuilder &Builder, 
-																	legacy::PassManagerBase &PM) {
+// static void addTestSanitizerPasses(const PassManagerBuilder &Builder, 
+// 																	legacy::PassManagerBase &PM) {
 	
-	//If there were arguments to add to your pass(es) you would do it here
-	PM.add(llvm::createSimpleModulePass()); 
-	PM.add(llvm::createSimpleFuncPass()); 
-	PM.add(llvm::createSimpleBlockPass()); 
-}
+// 	//If there were arguments to add to your pass(es) you would do it here
+// 	PM.add(llvm::createSimpleModulePass()); 
+// 	PM.add(llvm::createSimpleFuncPass()); 
+// 	PM.add(llvm::createSimpleBlockPass()); 
+// }
 
 static void addSanitizerCoveragePass(const PassManagerBuilder &Builder,
                                      legacy::PassManagerBase &PM) {
@@ -674,12 +674,12 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
                            addEfficiencySanitizerPass);
   }
 	//testsan
-	if (LangOpts.Sanitize.hasOneOf(SanitizerKind::Test)) {
-    PMBuilder.addExtension(PassManagerBuilder::EP_OptimizerLast,
-                           addTestSanitizerPasses);
-    PMBuilder.addExtension(PassManagerBuilder::EP_EnabledOnOptLevel0,
-                           addTestSanitizerPasses);
-	}
+	// if (LangOpts.Sanitize.hasOneOf(SanitizerKind::Test)) {
+  //   PMBuilder.addExtension(PassManagerBuilder::EP_OptimizerLast,
+  //                          addTestSanitizerPasses);
+  //   PMBuilder.addExtension(PassManagerBuilder::EP_EnabledOnOptLevel0,
+  //                          addTestSanitizerPasses);
+	// }
   // Set up the per-function pass manager.
   FPM.add(new TargetLibraryInfoWrapperPass(*TLII));
   if (CodeGenOpts.VerifyModule)

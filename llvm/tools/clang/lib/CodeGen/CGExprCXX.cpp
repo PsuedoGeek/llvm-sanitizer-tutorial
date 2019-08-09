@@ -1575,6 +1575,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
   // operator, just "inline" it directly.
   Address allocation = Address::invalid();
   CallArgList allocatorArgs;
+  RValue RV;
   if (allocator->isReservedGlobalPlacementOperator()) {
     assert(E->getNumPlacementArgs() == 1);
     const Expr *arg = *E->placement_arguments().begin();
@@ -1634,7 +1635,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     EmitCallArgs(allocatorArgs, allocatorType, E->placement_arguments(),
                  /*AC*/AbstractCallee(), /*ParamsToSkip*/ParamsToSkip);
 
-    RValue RV =
+    RV =
       EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs);
 
     // If this was a call to a global replaceable allocation function that does
@@ -1651,6 +1652,26 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     }
 
     allocation = Address(RV.getScalarVal(), allocationAlign);
+  }
+
+  SmallString<64> MangledName;
+  llvm::raw_svector_ostream MangledNameOut(MangledName);
+  CGM.getCXXABI().getMangleContext().mangleCXXRTTI(allocType.getUnqualifiedType(), MangledNameOut);
+  
+  if (SanOpts.has(SanitizerKind::Test)) {
+    CXXRecordDecl *RD = allocType->getAsCXXRecordDecl();
+    llvm::Constant* name = llvm::ConstantDataArray::getString(getLLVMContext(), MangledNameOut.str());
+    auto* gv = new llvm::GlobalVariable(CGM.getModule(), name->getType(), true, llvm::GlobalValue::PrivateLinkage, name );
+    gv->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
+
+    llvm::Constant* staticArgs[] = {
+        gv
+    };
+    llvm::Value* dynamicArgs[] = {
+      RV.getScalarVal()
+
+    };
+    EmitTaintHelper("testsan_HandleNew", staticArgs, dynamicArgs);
   }
 
   // Emit a null check on the allocation result if the allocation
